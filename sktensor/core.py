@@ -272,20 +272,39 @@ def innerprod(X, Y):
     return dot(X.flatten(), Y.flatten())
 
 
-def nvecs(X, n, rank, do_flipsign=True, dtype=np.float):
+def nvecs(X, n, rank, do_flipsign=True, use_eigsh=False, dtype=np.float):
     """
     Eigendecomposition of mode-n unfolding of a tensor
+
+    Parameters
+    ----------
+    X : sptensor or dtensor
+    n : int
+    rank : int
+           number of eigenvectors to return
+    do_flipsign: bool, optional
+              Flip sign of factor matrices such that largest magnitude
+              element will be positive
+    use_eigsh : bool, optional
+            if True, use the Implicitly Restarted Lanczos Method (scipy.sparse.linalg.eigsh)
+            to find eigenvectors of matrix unfolding.
+            eigsh is effective for large eigenvalues of sparse matrices,
+            but works poorly for dense matrices or when many eigenvalues are needed.
+    dtype: data-type, optional
     """
     Xn = X.unfold(n)
     if issparse_mat(Xn):
         Xn = csr_matrix(Xn, dtype=dtype)
-        Y = Xn.dot(Xn.T)
-        _, U = eigsh(Y, rank, which='LM')
-    else:
-        Y = Xn.dot(Xn.T)
+    Y = Xn.dot(Xn.T)
+    if not use_eigsh:
+        if issparse_mat(Y):
+            Y = Y.todense()
         N = Y.shape[0]
         _, U = eigh(Y, eigvals=(N - rank, N - 1))
         #_, U = eigsh(Y, rank, which='LM')
+    else:
+        Y = Xn.dot(Xn.T)
+        _, U = eigsh(Y, rank, which='LM')
     # reverse order of eigenvectors such that eigenvalues are decreasing
     U = array(U[:, ::-1])
     # flip sign
