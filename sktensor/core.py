@@ -303,7 +303,6 @@ def nvecs(X, n, rank, do_flipsign=True, use_eigsh=False, dtype=np.float):
         _, U = eigh(Y, eigvals=(N - rank, N - 1))
         #_, U = eigsh(Y, rank, which='LM')
     else:
-        Y = Xn.dot(Xn.T)
         _, U = eigsh(Y, rank, which='LM')
     # reverse order of eigenvectors such that eigenvalues are decreasing
     U = array(U[:, ::-1])
