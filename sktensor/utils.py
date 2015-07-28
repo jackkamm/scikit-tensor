@@ -9,7 +9,7 @@ def accum(subs, vals, func=np.sum, issorted=False, with_subs=False):
     # sort accmap for ediff if not sorted
     if not issorted:
         sidx = lexsort(subs, axis=0)
-        subs = [sub[sidx] for sub in subs]
+        subs = [np.array(sub)[sidx] for sub in subs]
         vals = vals[sidx]
     idx = np.where(np.diff(subs).any(axis=0))[0] + 1
     idx = np.concatenate(([0], idx, [subs[0].shape[0]]))
